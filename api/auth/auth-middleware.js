@@ -1,20 +1,22 @@
-const User = require("../users/users-model");
+const User = require("../users/users-model")
+
 /*
   If the user does not have a session saved in the server
-
   status 401
   {
     "message": "You shall not pass!"
   }
 */
 function restricted(req, res, next) {
-  console.log('restricted');
-  next();
+  if (req.session.user) {
+    next();
+  } else {
+    next({ status: 401, message: 'You shall not pass!' });
+  }
 }
 
 /*
   If the username in req.body already exists in the database
-
   status 422
   {
     "message": "Username taken"
@@ -49,6 +51,7 @@ async function checkUsernameExists(req, res, next) {
     const users = await User.findBy({ username: req.body.username });
     // console.log(req.body.username);
     if (users.length) {
+      req.user = users[0];
       next()
     } else {
       next({ status: 401, message: "Invalid credentials" });
