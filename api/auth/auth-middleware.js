@@ -1,3 +1,4 @@
+const User = require("../users/users-model");
 /*
   If the user does not have a session saved in the server
 
@@ -19,8 +20,24 @@ function restricted(req, res, next) {
     "message": "Username taken"
   }
 */
-function checkUsernameFree(req, res, next) {
-  next();
+async function checkUsernameFree(req, res, next) {
+  try {
+    const users = await User.findBy({ username: req.body.username });
+    // console.log(req.body.username);
+    // console.log(users); // empty array
+    // console.log(users.length); // 0
+    if (!users.length) { // if it is empty array-
+      next();
+    } else {
+      next({
+        status: 422,
+        message: "Username taken"
+      })
+    }
+
+  } catch (err) {
+    next(err);
+  }
 }
 
 /*
